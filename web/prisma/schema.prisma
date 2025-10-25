@@ -12,6 +12,8 @@ model User {
   handle    String   @unique
   name      String
   email     String?  @unique
+  password  String?
+  googleId  String?  @unique
   createdAt DateTime @default(now())
   reviews   Review[]
 }
