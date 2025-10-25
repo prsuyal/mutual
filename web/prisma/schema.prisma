@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  handle    String   @unique
+  name      String
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  reviews   Review[]
+}
+
+model Activity {
+  id         String  @id @default(cuid())
+  placeId    String  @unique
+  name       String
+  type       String?
+  lat        Float?
+  lng        Float?
+  priceLevel Int?
+  hoursJson  Json?
+  ratingAgg  Float?
+
+  reviews    Review[]
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  activityId String
+  rating     Int
+  tags       String[]
+  text       String?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  activity   Activity @relation(fields: [activityId], references: [id])
+}
