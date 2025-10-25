@@ -1,0 +1,14 @@
+@anthropic-ai/sdk
+@googlemaps/google-maps-services-js
+@letta-ai/letta-client
+@prisma/client
+@tanstack/react-query
+@vapi-ai/web
+anthropic
+axios
+next
+prisma
+react
+react-dom
+zod
+zustand
