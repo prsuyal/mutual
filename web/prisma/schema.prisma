@@ -79,7 +79,7 @@ model Review {
   userId     String
   activityId String
   rating     Int
-  tags       String[]
+  tags       String
   text       String?
   createdAt  DateTime @default(now())
   activity   Activity @relation(fields: [activityId], references: [id])

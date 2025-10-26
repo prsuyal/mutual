@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 export const runtime = 'nodejs'
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
+
 
 const db = new PrismaClient();
 
@@ -56,7 +59,7 @@ export async function POST(req: Request) {
     const placeId: string | undefined = body?.placeId;
     const name: string | undefined = body?.name;
     const rating: number | undefined = body?.rating;
-    const tags: string[] = Array.isArray(body?.tags) ? body.tags : [];
+    const tags: string | undefined = body?.tags;
     const text: string = typeof body?.text === "string" ? body.text : "";
 
     if (!handle || !placeId || !name || typeof rating !== "number") {
@@ -65,12 +68,17 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    const user = await db.user.upsert({
-      where: { handle },
-      update: {},
-      create: { handle, name: handle.replace("@", "") },
-    });
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session || !session.user) {
+      throw new Error("Unauthorized: No active session")
+    }
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { 
+        id: true,
+        handle: true 
+      },
+    })
 
     const activity = await db.activity.upsert({
       where: { placeId },
