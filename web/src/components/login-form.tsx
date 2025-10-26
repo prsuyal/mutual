@@ -130,17 +130,21 @@ export function LoginForm({
                   onClick={handleGoogleLogin}
                   className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all"
                 >
-                  Login with Google
-                </Button>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account?{' '}
-                  <a href="/signup" className="text-purple-600 hover:text-purple-700 underline transition-colors">
-                    Sign up
-                  </a>
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-          </form>
+                  Forgot your password?
+                </a>
+              </div>
+              <Input id="password" type="password" required />
+            </Field>
+            <Field>
+              <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white transition-all">Login</Button>
+              <Button variant="outline" type="button" className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all">
+                Login with Google
+              </Button>
+              <FieldDescription className="text-center">
+                Don&apos;t have an account? <a href="/auth/signup" className=" transition-colors">Sign up</a>
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
         </CardContent>
       </Card>
     </div>

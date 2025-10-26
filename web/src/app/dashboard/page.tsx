@@ -78,6 +78,8 @@ export default function Page() {
         setLoading(false);
       }
     } else {
+      // When in review mode, the prompt becomes the tags/free-form text
+      setNotes(prompt);
       setReviewOpen(true);
     }
   }
@@ -107,7 +109,7 @@ export default function Page() {
                 placeholder={
                   mode === "explore"
                     ? 'Ask anything… e.g. "with @pranshu in san francisco under $30 for a birthday"'
-                    : 'Review a place… e.g. "Review: Espresso Vivace, 5 — cozy, great milk texture"'
+                    : 'Add quick tags… e.g. "cozy, great milk texture, romantic vibe"'
                 }
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -129,7 +131,7 @@ export default function Page() {
                 {parsed.budgetMax ? `$${parsed.budgetMax}` : "no budget"}, {parsed.occasion || "no occasion"}
               </div>
             ) : (
-              <div className="text-xs text-muted-foreground">We'll ask you to pick the exact place in a moment.</div>
+              <div className="text-xs text-muted-foreground">Add your review notes, then we'll help you find the place.</div>
             )}
           </div>
         </div>
@@ -176,7 +178,6 @@ export default function Page() {
           open={reviewOpen}
           onOpenChange={setReviewOpen}
           currentHandle={currentHandle}
-          defaultText={prompt}
           onSubmitted={() => {
             setPrompt("");
             setSelectedPlace(null);
@@ -219,7 +220,6 @@ function ReviewDialog(props: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   currentHandle: string;
-  defaultText: string;
   onSubmitted: () => void;
   selectedPlace: { placeId: string; name: string } | null;
   setSelectedPlace: (p: { placeId: string; name: string } | null) => void;
@@ -232,7 +232,6 @@ function ReviewDialog(props: {
     open,
     onOpenChange,
     currentHandle,
-    defaultText,
     onSubmitted,
     selectedPlace,
     setSelectedPlace,
@@ -243,7 +242,7 @@ function ReviewDialog(props: {
   } = props;
 
   const placesLib = useMapsLibrary("places");
-  const [query, setQuery] = useState(defaultText.replace(/^review:\s*/i, "").trim());
+  const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -282,8 +281,8 @@ function ReviewDialog(props: {
           placeId: selectedPlace.placeId,
           name: selectedPlace.name,
           rating,
-          tags: "",
-          text: notes,
+          tags: notes, // The free-form text now goes into tags
+          text: "",
         }),
       });
       onOpenChange(false);
@@ -304,6 +303,7 @@ function ReviewDialog(props: {
         </DialogHeader>
 
         <div className="space-y-3">
+          {/* Step 1: Select location first */}
           <div className="grid gap-2">
             <Label>Search place</Label>
             <Input
@@ -334,31 +334,36 @@ function ReviewDialog(props: {
             ) : null}
           </div>
 
-          <div className="grid gap-2">
-            <Label>Rating (1–5)</Label>
-            <Input
-              type="number"
-              min={1}
-              max={5}
-              value={rating}
-              onChange={(e) => props.setRating(Number(e.target.value))}
-            />
-          </div>
+          {/* Step 2: After location is selected, show rating and tags */}
+          {selectedPlace && (
+            <>
+              <div className="grid gap-2">
+                <Label>Rating (1–5)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={rating}
+                  onChange={(e) => setRating(Number(e.target.value))}
+                />
+              </div>
 
-          <div className="grid gap-2">
-            <Label>Notes</Label>
-            <Textarea
-              placeholder="Why did you like/dislike it?"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+              <div className="grid gap-2">
+                <Label>Review notes / tags</Label>
+                <Textarea
+                  placeholder="e.g. cozy, great milk texture, romantic vibe"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </div>
 
-          <div className="pt-2">
-            <Button disabled={!selectedPlace || loading} onClick={submitReview} className="bg-purple-600 hover:bg-purple-700 text-white transition-all">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit review"}
-            </Button>
-          </div>
+              <div className="pt-2">
+                <Button disabled={loading} onClick={submitReview} className="bg-purple-600 hover:bg-purple-700 text-white transition-all">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit review"}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
