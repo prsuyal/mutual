@@ -168,7 +168,6 @@ const handleGoogleSignup = async () => {
                 {error}
               </div>
             )}
-
             <FieldGroup>
               <Field>
                 <Button type="submit" disabled={loading} className="w-full">
@@ -188,7 +187,7 @@ const handleGoogleSignup = async () => {
               </Field>
             </FieldGroup>
           </FieldGroup>
-        </form>
+        </FieldGroup>
       </CardContent>
     </Card>
   )
