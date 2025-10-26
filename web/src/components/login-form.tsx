@@ -44,7 +44,6 @@ export function LoginForm({
       if (result.error) {
         setError(result.error.message || 'Invalid email or password')
       } else {
-        // Login successful, redirect to dashboard
         router.push('/dashboard')
       }
     } catch (err: any) {
@@ -60,7 +59,7 @@ export function LoginForm({
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: '/dashboard', // Users with existing accounts should have handles
+        callbackURL: '/dashboard',
       })
     } catch (err: any) {
       console.error('Google login error:', err)

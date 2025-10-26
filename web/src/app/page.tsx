@@ -37,7 +37,7 @@ export default function Home() {
             variant="outline" 
             className="px-6 py-2 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all"
           >
-            Log In
+            Login
           </Button>
         </Link>
         <Link href="/auth/signup">
