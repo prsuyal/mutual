@@ -905,7 +905,7 @@ export function HamburgerMenu() {
                   {user.name || "Anonymous"}
                 </span>
                 <span className="text-xs text-gray-500 truncate">
-                  {user.id}
+                  @{handle}
                 </span>
               </div>
             </div>
