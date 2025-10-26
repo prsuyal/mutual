@@ -15,10 +15,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { Loader2, Menu } from "lucide-react";
-import { FriendsDialog } from "@/components/friends-dialog";
+import { authClient } from '@/lib/auth-client'
+import { useRouter } from 'next/navigation'
+import { Loader2, Menu } from "lucide-react"
+import { FriendsDialog } from "@/components/friends-dialog"
+import { ReviewsDialog } from "@/components/review-list"
 
 type Place = {
   placeId: string;
@@ -719,10 +720,6 @@ function ReviewDialog(props: {
     setLoading(true);
     try {
       const tagsArray = notes
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
-
       await fetch("/api/reviews", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -830,11 +827,30 @@ function ReviewDialog(props: {
   );
 }
 
-function HamburgerMenu() {
-  const [open, setOpen] = useState(false);
+export function HamburgerMenu() {
+  const [open, setOpen] = useState(false)
   const [friendsOpen, setFriendsOpen] = useState(false);
-  const router = useRouter();
-  const { data: session } = authClient.useSession();
+  const [reviewsOpen, setReviewsOpen] = useState(false); 
+  const [user, setUser] = useState<any>(null)
+  const [handle, setHandle] =useState<any>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await authClient.getSession()
+        if (session?.data?.user){
+          setUser(session.data.user)
+          const res = await fetch('/api/user/me')
+          const data = await res.json()
+          setHandle(data.handle)
+        } 
+      } catch (err) {
+        console.error("Failed to fetch session:", err)
+      }
+    }
+    fetchSession()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -898,7 +914,10 @@ function HamburgerMenu() {
           )}
 
           <div className="p-4 space-y-3">
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={() => {
+                setReviewsOpen(true)
+                setOpen(false)
+              }}>
               Previous Reviews
             </Button>
             <Button
@@ -925,6 +944,7 @@ function HamburgerMenu() {
       </div>
 
       <FriendsDialog open={friendsOpen} onOpenChange={setFriendsOpen} />
+      <ReviewsDialog open={reviewsOpen} onOpenChange={setReviewsOpen} />
     </>
   );
 }

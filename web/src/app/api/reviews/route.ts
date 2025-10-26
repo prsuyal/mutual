@@ -2,8 +2,6 @@ import { PrismaClient } from "@prisma/client";
 export const runtime = 'nodejs'
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
-import { Tagesschrift } from "next/font/google";
-
 
 const db = new PrismaClient();
 
@@ -60,7 +58,6 @@ export async function POST(req: Request) {
     const placeId: string | undefined = body?.placeId;
     const name: string | undefined = body?.name;
     const rating: number | undefined = body?.rating;
-    const tags: string | undefined = body?.tags;
     const text: string = typeof body?.text === "string" ? body.text : "";
 
     if (!handle || !placeId || !name || typeof rating !== "number") {
@@ -101,7 +98,7 @@ export async function POST(req: Request) {
       const tasteAgent = await getOrCreateTasteAgent(handle);
       const agentId = tasteAgent?.id || tasteAgent?.data?.id;
       if (agentId) {
-        await appendTasteMemory(agentId, { placeId, rating, tags, text }).catch(() => null);
+        await appendTasteMemory(agentId, { placeId, rating, text }).catch(() => null);
       }
     }
 
@@ -111,3 +108,37 @@ export async function POST(req: Request) {
   }
 }
 
+export async function GET() {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    
+    if (!session?.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const reviews = await db.review.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      include: {
+        activity: {
+          select: {
+            id: true,
+            placeId: true,
+            name: true,
+            lat: true,
+            lng: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return Response.json({ reviews })
+  } catch (error) {
+    console.error('Get reviews error:', error)
+    return Response.json({ error: 'Failed to get reviews' }, { status: 500 })
+  }
+}
