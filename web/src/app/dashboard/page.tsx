@@ -66,26 +66,14 @@ type Mode = "explore" | "review";
 
 export default function Page() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-<<<<<<< HEAD
-  const router = useRouter();
-
-  const { data: session, isPending } = authClient.useSession();
-
-  const currentHandle = session?.user?.handle ?? null;
-
-=======
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
   const [currentUser, setCurrentUser] = useState<{ handle: string } | null>(null)
   
->>>>>>> f07548738d6c99fa0b1eb6a57839e3f30d3d3c00
   useEffect(() => {
     if (!isPending && !session) {
       router.push("/");
     }
-<<<<<<< HEAD
-  }, [session, isPending, router]);
-=======
   }, [session, isPending, router])
   
   useEffect(() => {
@@ -99,9 +87,7 @@ export default function Page() {
     fetchCurrentUser()
   }, [session])
 
-  const currentHandle = currentUser?.handle
   console.log(currentHandle)
->>>>>>> f07548738d6c99fa0b1eb6a57839e3f30d3d3c00
 
   const [mode, setMode] = useState<Mode>("explore");
   const [prompt, setPrompt] = useState("");
@@ -520,17 +506,31 @@ function ReviewDialog(props: {
   );
 }
 
-function HamburgerMenu() {
-  const [open, setOpen] = useState(false);
-  const [friendsOpen, setFriendsOpen] = useState(false);
-  const router = useRouter();
+export function HamburgerMenu() {
+  const [open, setOpen] = useState(false)
+  const [friendsOpen, setFriendsOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const router = useRouter()
+
+  
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await authClient.useSession()
+        if (session?.data?.user) setUser(session.data.user)
+      } catch (err) {
+        console.error("Failed to fetch session:", err)
+      }
+    }
+    fetchSession()
+  }, [])
 
   const handleLogout = async () => {
     try {
-      await authClient.signOut();
-      router.push("/");
+      await authClient.signOut()
+      router.push("/")
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Logout error:", error)
     }
   };
 
@@ -565,6 +565,21 @@ function HamburgerMenu() {
               <Menu className="w-5 h-5" />
             </button>
           </div>
+
+          {user && (
+            <div className="flex items-center gap-3 p-4 border-b">
+              <img
+                src={user.image || "/default-avatar.png"}
+                alt="User avatar"
+                className="w-10 h-10 rounded-full object-cover border"
+              />
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm">{user.name || "Anonymous"}</span>
+                <span className="text-xs text-gray-500 truncate">{user.id}</span>
+              </div>
+            </div>
+          )}
+
           <div className="p-4 space-y-3">
             <Button variant="outline" className="w-full">
               Previous Reviews
@@ -594,5 +609,5 @@ function HamburgerMenu() {
 
       <FriendsDialog open={friendsOpen} onOpenChange={setFriendsOpen} />
     </>
-  );
+  )
 }
