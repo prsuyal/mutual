@@ -82,7 +82,7 @@ export default function Page() {
     fetchCurrentUser()
   }, [session])
 
-  const currentHandle = currentUser?.handle || null
+  const currentHandle = currentUser?.handle
   console.log(currentHandle)
 
   const [mode, setMode] = useState<Mode>("explore");
@@ -243,7 +243,7 @@ export default function Page() {
           <ReviewDialog
             open={reviewOpen}
             onOpenChange={setReviewOpen}
-            currentHandle={currentHandle}
+            currentHandle={currentHandle!}
             onSubmitted={() => {
               setPrompt("");
               setSelectedPlace(null);
