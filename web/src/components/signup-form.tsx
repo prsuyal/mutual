@@ -29,64 +29,72 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-const handleEmailSignup = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setError(null)
-  setLoading(true)
+  const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
 
-  if (password !== confirmPassword) {
-    setError('Passwords do not match')
-    setLoading(false)
-    return
-  }
-
-  try {
-    // First, create the user account
-    const result = await authClient.signUp.email({
-      email,
-      password,
-      name,
-    })
-
-    if (result.error) {
-      setError(result.error.message || 'Signup failed')
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      setLoading(false)
       return
     }
 
-    // Then, update with the handle
-    const response = await fetch('/api/user/update-handle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ handle }),
-    })
-
-    if (!response.ok) {
-      setError('Failed to set handle')
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long')
+      setLoading(false)
       return
     }
 
-    alert('Account created successfully!')
-    router.push('/dashboard')
-  } catch (err: any) {
-    console.error('Signup error:', err)
-    setError(err?.message || 'An unexpected error occurred')
-  } finally {
-    setLoading(false)
-  }
-}
+    try {
+      // Create the user account
+      const result = await authClient.signUp.email({
+        email,
+        password,
+        name,
+      })
 
-const handleGoogleSignup = async () => {
-  setError(null)
-  try {
-    await authClient.signIn.social({
-      provider: 'google',
-      callbackURL: '/setup-handle', 
-    })
-  } catch (err: any) {
-    console.error('Google signup error:', err)
-    setError(err?.message || 'Google sign up failed')
+      if (result.error) {
+        setError(result.error.message || 'Signup failed')
+        setLoading(false)
+        return
+      }
+
+      // Update with the handle
+      const handleResponse = await fetch('/api/user/update-handle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle }),
+      })
+
+      if (!handleResponse.ok) {
+        setError('Failed to set handle')
+        setLoading(false)
+        return
+      }
+
+      alert('Account created successfully!')
+      router.push('/dashboard')
+    } catch (err: any) {
+      console.error('Signup error:', err)
+      setError(err?.message || 'An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
   }
-}
+
+  const handleGoogleSignup = async () => {
+    setError(null)
+    try {
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/setup-handle',
+      })
+    } catch (err: any) {
+      console.error('Google signup error:', err)
+      setError(err?.message || 'Google sign up failed')
+    }
+  }
 
   return (
     <Card {...props}>
@@ -168,6 +176,7 @@ const handleGoogleSignup = async () => {
                 {error}
               </div>
             )}
+
             <FieldGroup>
               <Field>
                 <Button type="submit" disabled={loading} className="w-full">
@@ -177,16 +186,18 @@ const handleGoogleSignup = async () => {
                   variant="outline" 
                   type="button" 
                   onClick={handleGoogleSignup}
-                  className="w-full">
+                  className="w-full"
+                  disabled={loading}
+                >
                   Sign up with Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
-                  Already have an account? <a href="/auth/login" className="underline">Sign in</a>
+                  Already have an account? <a href="/signin" className="underline">Sign in</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
           </FieldGroup>
-          </form>
+        </form>
       </CardContent>
     </Card>
   )
