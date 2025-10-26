@@ -282,7 +282,7 @@ function ReviewDialog(props: {
           placeId: selectedPlace.placeId,
           name: selectedPlace.name,
           rating,
-          tags: [], // no tags; minimalist
+          tags: "",
           text: notes,
         }),
       });

@@ -177,17 +177,16 @@ const handleGoogleSignup = async () => {
                   variant="outline" 
                   type="button" 
                   onClick={handleGoogleSignup}
-                  className="w-full"
-                >
+                  className="w-full">
                   Sign up with Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
-                  Already have an account? <a href="/signin" className="underline">Sign in</a>
+                  Already have an account? <a href="/auth/login" className="underline">Sign in</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
           </FieldGroup>
-        </FieldGroup>
+          </form>
       </CardContent>
     </Card>
   )
