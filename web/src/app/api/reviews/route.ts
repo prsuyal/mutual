@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 export const runtime = 'nodejs'
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
+import { Tagesschrift } from "next/font/google";
 
 
 const db = new PrismaClient();
@@ -86,15 +87,15 @@ export async function POST(req: Request) {
       create: { placeId, name },
     });
 
-    const review = await db.review.create({
-      data: {
-        userId: user.id,
-        activityId: activity.id,
-        rating,
-        tags,
-        text,
-      },
-    });
+      const review = await db.review.create({
+        data: {
+          userId: user.id,
+          activityId: activity.id,
+          rating,
+          text,
+        },
+      });
+    
 
     if (process.env.LETTA_API_KEY && process.env.LETTA_PROJECT_ID) {
       const tasteAgent = await getOrCreateTasteAgent(handle);

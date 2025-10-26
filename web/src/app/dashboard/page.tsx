@@ -10,7 +10,12 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, Menu } from "lucide-react";
+import { authClient } from '@/lib/auth-client'
+import { useRouter } from 'next/navigation'
+
+
+
 
 type Place = {
   placeId: string;
@@ -30,7 +35,15 @@ type Mode = "explore" | "review";
 
 export default function Page() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-  const currentHandle = "@demo"; 
+  const currentHandle = "@demo";
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
+  
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push('/')
+    }
+  }, [session, isPending, router])
 
   const [mode, setMode] = useState<Mode>("explore");
   const [prompt, setPrompt] = useState("");
@@ -78,131 +91,139 @@ export default function Page() {
         setLoading(false);
       }
     } else {
-      // When in review mode, the prompt becomes the tags/free-form text
       setNotes(prompt);
       setReviewOpen(true);
+    }
+
+    if (isPending) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+        </div>
+      )
+    }
+    if (!session) {
+      return null
     }
   }
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="min-h-screen relative">
-        <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
-          <Image src={logo} alt="Logo" width={34} height={34} />
-          <span className="font-medium tracking-tight">mutual</span>
-        </div>
-
-        <div className="flex items-center justify-center pt-36 pb-10">
-          <div className="w-full max-w-2xl flex flex-col items-center gap-4">
-            <div className="inline-flex rounded-full border bg-white/70 backdrop-blur p-1 shadow-sm">
-              <TogglePill active={mode === "explore"} onClick={() => setMode("explore")}>
-                Explore
-              </TogglePill>
-              <TogglePill active={mode === "review"} onClick={() => setMode("review")}>
-                Review
-              </TogglePill>
-            </div>
-
-            <div className="relative w-full">
-              <Input
-                ref={inputRef}
-                placeholder={
-                  mode === "explore"
-                    ? 'Ask anything… e.g. "with @pranshu in san francisco under $30 for a birthday"'
-                    : 'Add quick tags… e.g. "cozy, great milk texture, romantic vibe"'
-                }
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && onSubmit()}
-                className="h-12 rounded-xl pl-4 pr-28"
-              />
-              <Button
-                onClick={onSubmit}
-                disabled={loading}
-                className="absolute right-1.5 top-1.5 h-9 rounded-lg px-4 bg-purple-600 hover:bg-purple-700 text-white transition-all"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go"}
-              </Button>
-            </div>
-
-            {mode === "explore" ? (
-              <div className="text-xs text-muted-foreground">
-                Detected → {parsed.companions.join(", ") || "no friends"}, {parsed.city || "no city"},{" "}
-                {parsed.budgetMax ? `$${parsed.budgetMax}` : "no budget"}, {parsed.occasion || "no occasion"}
-              </div>
-            ) : (
-              <div className="text-xs text-muted-foreground">Add your review notes, then we'll help you find the place.</div>
-            )}
+      <div className="min-h-screen relative flex">
+        <div className="flex-1 relative">
+          <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
+            <Image src={logo} alt="Logo" width={34} height={34} />
+            <span className="font-medium tracking-tight">mutual</span>
           </div>
+
+          <div className="flex items-center justify-center pt-36 pb-10">
+            <div className="w-full max-w-2xl flex flex-col items-center gap-4">
+              <div className="inline-flex rounded-full border bg-white/70 backdrop-blur p-1 shadow-sm">
+                <TogglePill active={mode === "explore"} onClick={() => setMode("explore")}>
+                  Explore
+                </TogglePill>
+                <TogglePill active={mode === "review"} onClick={() => setMode("review")}>
+                  Review
+                </TogglePill>
+              </div>
+
+              <div className="relative w-full">
+                <Input
+                  ref={inputRef}
+                  placeholder={
+                    mode === "explore"
+                      ? 'Ask anything… e.g. "with @pranshu in san francisco under $30 for a birthday"'
+                      : 'Add quick tags… e.g. "cozy, great milk texture, romantic vibe"'
+                  }
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && onSubmit()}
+                  className="h-12 rounded-xl pl-4 pr-28"
+                />
+                <Button
+                  onClick={onSubmit}
+                  disabled={loading}
+                  className="absolute right-1.5 top-1.5 h-9 rounded-lg px-4 bg-purple-600 hover:bg-purple-700 text-white transition-all"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go"}
+                </Button>
+              </div>
+
+              {mode === "explore" ? (
+                <div className="text-xs text-muted-foreground">
+                  Detected → {parsed.companions.join(", ") || "no friends"}, {parsed.city || "no city"},{" "}
+                  {parsed.budgetMax ? `$${parsed.budgetMax}` : "no budget"}, {parsed.occasion || "no occasion"}
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">
+                  Add your review notes, then we'll help you find the place.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mx-auto w-full max-w-5xl px-4 pb-16 space-y-3">
+            {suggestions.length === 0 && !loading ? (
+              <div className="text-sm text-muted-foreground text-center">No suggestions yet.</div>
+            ) : null}
+
+            {suggestions.map((s, idx) => {
+              const place = s.places?.[0];
+              const mapsLink = place?.placeId
+                ? `https://www.google.com/maps/place/?q=place_id:${place.placeId}`
+                : undefined;
+
+              return (
+                <Card key={idx} className="rounded-2xl">
+                  <CardHeader className="flex flex-row items-center justify-between gap-3">
+                    <div className="text-base font-medium">{s.title}</div>
+                    {mapsLink ? (
+                      <a
+                        className="text-sm text-purple-600 hover:text-purple-700 transition-colors"
+                        href={mapsLink}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Open in Maps
+                      </a>
+                    ) : null}
+                  </CardHeader>
+                  <CardContent className="space-y-1">
+                    {place?.name ? <div className="text-sm">{place.name}</div> : null}
+                    {place?.address ? (
+                      <div className="text-sm text-muted-foreground">{place.address}</div>
+                    ) : null}
+                    <div className="text-sm">{s.reason}</div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          <ReviewDialog
+            open={reviewOpen}
+            onOpenChange={setReviewOpen}
+            currentHandle={currentHandle}
+            onSubmitted={() => {
+              setPrompt("");
+              setSelectedPlace(null);
+            }}
+            selectedPlace={selectedPlace}
+            setSelectedPlace={setSelectedPlace}
+            rating={rating}
+            setRating={setRating}
+            notes={notes}
+            setNotes={setNotes}
+          />
         </div>
 
-        <div className="mx-auto w-full max-w-5xl px-4 pb-16 space-y-3">
-          {suggestions.length === 0 && !loading ? (
-            <div className="text-sm text-muted-foreground text-center">No suggestions yet.</div>
-          ) : null}
-
-          {suggestions.map((s, idx) => {
-            const place = s.places?.[0];
-            const mapsLink = place?.placeId
-              ? `https://www.google.com/maps/place/?q=place_id:${place.placeId}`
-              : undefined;
-
-            return (
-              <Card key={idx} className="rounded-2xl">
-                <CardHeader className="flex flex-row items-center justify-between gap-3">
-                  <div className="text-base font-medium">{s.title}</div>
-                  {mapsLink ? (
-                    <a
-                      className="text-sm text-purple-600 hover:text-purple-700 transition-colors"
-                      href={mapsLink}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open in Maps
-                    </a>
-                  ) : null}
-                </CardHeader>
-                <CardContent className="space-y-1">
-                  {place?.name ? <div className="text-sm">{place.name}</div> : null}
-                  {place?.address ? (
-                    <div className="text-sm text-muted-foreground">{place.address}</div>
-                  ) : null}
-                  <div className="text-sm">{s.reason}</div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <ReviewDialog
-          open={reviewOpen}
-          onOpenChange={setReviewOpen}
-          currentHandle={currentHandle}
-          onSubmitted={() => {
-            setPrompt("");
-            setSelectedPlace(null);
-          }}
-          selectedPlace={selectedPlace}
-          setSelectedPlace={setSelectedPlace}
-          rating={rating}
-          setRating={setRating}
-          notes={notes}
-          setNotes={setNotes}
-        />
+        <HamburgerMenu />
       </div>
     </APIProvider>
   );
 }
 
-function TogglePill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function TogglePill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
@@ -228,19 +249,7 @@ function ReviewDialog(props: {
   notes: string;
   setNotes: (s: string) => void;
 }) {
-  const {
-    open,
-    onOpenChange,
-    currentHandle,
-    onSubmitted,
-    selectedPlace,
-    setSelectedPlace,
-    rating,
-    setRating,
-    notes,
-    setNotes,
-  } = props;
-
+  const { open, onOpenChange, currentHandle, onSubmitted, selectedPlace, setSelectedPlace, rating, setRating, notes, setNotes } = props;
   const placesLib = useMapsLibrary("places");
   const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState<any[]>([]);
@@ -273,17 +282,11 @@ function ReviewDialog(props: {
     if (!selectedPlace) return;
     setLoading(true);
     try {
+      const tagsArray = notes.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
       await fetch("/api/reviews", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          handle: currentHandle,
-          placeId: selectedPlace.placeId,
-          name: selectedPlace.name,
-          rating,
-          tags: notes, // The free-form text now goes into tags
-          text: "",
-        }),
+        body: JSON.stringify({ handle: currentHandle, placeId: selectedPlace.placeId, name: selectedPlace.name, rating, text: tagsArray }),
       });
       onOpenChange(false);
       setQuery("");
@@ -301,9 +304,7 @@ function ReviewDialog(props: {
         <DialogHeader>
           <DialogTitle>{selectedPlace ? `Review ${selectedPlace.name}` : "Pick a place to review"}</DialogTitle>
         </DialogHeader>
-
         <div className="space-y-3">
-          {/* Step 1: Select location first */}
           <div className="grid gap-2">
             <Label>Search place</Label>
             <Input
@@ -317,46 +318,28 @@ function ReviewDialog(props: {
             {predictions.length > 0 && !selectedPlace && (
               <div className="border rounded-md max-h-48 overflow-auto">
                 {predictions.map((p) => (
-                  <button
-                    key={p.place_id}
-                    onClick={() => pickPrediction(p)}
-                    className="w-full text-left px-3 py-2 hover:bg-purple-50 transition-colors"
-                  >
+                  <button key={p.place_id} onClick={() => pickPrediction(p)} className="w-full text-left px-3 py-2 hover:bg-purple-50 transition-colors">
                     {p.description}
                   </button>
                 ))}
               </div>
             )}
-            {selectedPlace ? (
+            {selectedPlace && (
               <div className="text-sm text-muted-foreground">
                 Selected: <span className="font-medium text-foreground">{selectedPlace.name}</span>
               </div>
-            ) : null}
+            )}
           </div>
-
-          {/* Step 2: After location is selected, show rating and tags */}
           {selectedPlace && (
             <>
               <div className="grid gap-2">
                 <Label>Rating (1–5)</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={5}
-                  value={rating}
-                  onChange={(e) => setRating(Number(e.target.value))}
-                />
+                <Input type="number" min={1} max={5} value={rating} onChange={(e) => setRating(Number(e.target.value))} />
               </div>
-
               <div className="grid gap-2">
                 <Label>Review notes / tags</Label>
-                <Textarea
-                  placeholder="e.g. cozy, great milk texture, romantic vibe"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
+                <Textarea placeholder="e.g. cozy, great milk texture, romantic vibe" value={notes} onChange={(e) => setNotes(e.target.value)} />
               </div>
-
               <div className="pt-2">
                 <Button disabled={loading} onClick={submitReview} className="bg-purple-600 hover:bg-purple-700 text-white transition-all">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit review"}
@@ -367,5 +350,62 @@ function ReviewDialog(props: {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function HamburgerMenu() {
+  const [open, setOpen] = useState(false);
+  const router = useRouter()
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut()
+      router.push('/') // Redirect to home page
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
+  return (
+    <>
+      {/* Hamburger button */}
+      <button
+        className="p-3 m-2 bg-purple-600 text-white rounded-md shadow hover:bg-purple-700 transition-all fixed top-4 right-4 z-40"
+        onClick={() => setOpen(true)}
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Side menu */}
+      <div
+        className={`h-full w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out fixed right-0 top-0 z-40 flex flex-col justify-between ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div>
+          <div className="flex justify-between items-center p-4 border-b">
+            <span className="font-medium">Menu</span>
+            <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-purple-600">
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-4 space-y-3">
+            <Button variant="outline" className="w-full">Previous Reviews</Button>
+            <Button variant="outline" className="w-full">Friends</Button>
+          </div>
+        </div>
+
+        <div className="p-4">
+        <Button onClick={handleLogout} className="w-full bg-purple-600 text-white hover:bg-purple-700">Log Out</Button>
+        </div>
+      </div>
+    </>
   );
 }

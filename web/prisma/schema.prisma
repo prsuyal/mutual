@@ -12,42 +12,45 @@ model User {
   handle        String?   @unique
   name          String
   email         String    @unique
-  emailVerified Boolean @default(true)
-  image         String?
   createdAt     DateTime  @default(now())
+  image         String?
+  emailVerified Boolean   @default(true)
   updatedAt     DateTime  @updatedAt
+  accounts      Account[]
   reviews       Review[]
   sessions      Session[]
-  accounts      Account[]
+  friends       String[]      
+  outgoingRequests String[] 
+  incomingRequests String[] 
 }
 
 model Session {
   id        String   @id @default(cuid())
   userId    String
   expiresAt DateTime
+  token     String   @unique
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  token     String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
-  id           String    @id @default(cuid())
-  accountId    String    @unique
-  providerId   String
-  userId       String
-  accessToken  String?   @db.Text
-  refreshToken String?   @db.Text
-  expiresAt    DateTime?
-  password     String?
-  scope        String?   
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  idToken      String?   @db.Text
+  id                   String    @id @default(cuid())
+  userId               String
+  accessToken          String?
+  refreshToken         String?
+  expiresAt            DateTime?
+  accountId            String    @unique
+  providerId           String
+  password             String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   accessTokenExpiresAt DateTime?
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idToken              String?
+  scope                String?
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Verification {
@@ -79,7 +82,6 @@ model Review {
   userId     String
   activityId String
   rating     Int
-  tags       String
   text       String?
   createdAt  DateTime @default(now())
   activity   Activity @relation(fields: [activityId], references: [id])

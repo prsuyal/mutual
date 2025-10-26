@@ -117,27 +117,8 @@ export function LoginForm({
               )}
 
               <Field>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-all"
-                >
-                  {loading ? 'Logging in...' : 'Login'}
-                </Button>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all"
-                >
-                  Forgot your password?
-                </a>
-              </div>
-              <Input id="password" type="password" required />
-            </Field>
-            <Field>
               <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white transition-all">Login</Button>
-              <Button variant="outline" type="button" className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all">
+              <Button onClick={handleGoogleLogin} variant="outline" type="button" className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all">
                 Login with Google
               </Button>
               <FieldDescription className="text-center">
@@ -145,6 +126,7 @@ export function LoginForm({
               </FieldDescription>
             </Field>
           </FieldGroup>
+          </form>
         </CardContent>
       </Card>
     </div>
