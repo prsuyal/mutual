@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+export const runtime = 'nodejs'
 
 const db = new PrismaClient();
 
@@ -100,3 +101,4 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: e?.message || "server_error" }, { status: 500 });
   }
 }
+

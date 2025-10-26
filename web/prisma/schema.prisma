@@ -8,19 +8,62 @@ datasource db {
 }
 
 model User {
+  id            String    @id @default(cuid())
+  handle        String?   @unique
+  name          String
+  email         String    @unique
+  emailVerified Boolean @default(true)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reviews       Review[]
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model Session {
   id        String   @id @default(cuid())
-  handle    String   @unique
-  name      String
-  email     String?  @unique
-  password  String?
-  googleId  String?  @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
   createdAt DateTime @default(now())
-  reviews   Review[]
+  updatedAt DateTime @updatedAt
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id           String    @id @default(cuid())
+  accountId    String    @unique
+  providerId   String
+  userId       String
+  accessToken  String?   @db.Text
+  refreshToken String?   @db.Text
+  expiresAt    DateTime?
+  password     String?
+  scope        String?   
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  idToken      String?   @db.Text
+  accessTokenExpiresAt DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
 }
 
 model Activity {
-  id         String  @id @default(cuid())
-  placeId    String  @unique
+  id         String   @id @default(cuid())
+  placeId    String   @unique
   name       String
   type       String?
   lat        Float?
@@ -28,7 +71,6 @@ model Activity {
   priceLevel Int?
   hoursJson  Json?
   ratingAgg  Float?
-
   reviews    Review[]
 }
 
@@ -40,7 +82,6 @@ model Review {
   tags       String[]
   text       String?
   createdAt  DateTime @default(now())
-
-  user       User     @relation(fields: [userId], references: [id])
   activity   Activity @relation(fields: [activityId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 }
