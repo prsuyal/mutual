@@ -7,13 +7,18 @@ import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { authClient } from '@/lib/auth-client'
-import { useRouter } from 'next/navigation'
-import { Loader2, Menu } from "lucide-react"
-import { FriendsDialog } from "@/components/friends-dialog"
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { Loader2, Menu } from "lucide-react";
+import { FriendsDialog } from "@/components/friends-dialog";
 
 type Place = {
   placeId: string;
@@ -30,46 +35,48 @@ type Suggestion = {
 };
 
 type Friend = {
-  friendshipId: string
+  friendshipId: string;
   user: {
-    id: string
-    handle: string
-    name: string
-    image: string | null
-  }
-  since: string
-}
+    id: string;
+    handle: string;
+    name: string;
+    image: string | null;
+  };
+  since: string;
+};
 
 type FriendRequest = {
-  id: string
+  id: string;
   sender?: {
-    id: string
-    handle: string
-    name: string
-    image: string | null
-  }
+    id: string;
+    handle: string;
+    name: string;
+    image: string | null;
+  };
   receiver?: {
-    id: string
-    handle: string
-    name: string
-    image: string | null
-  }
-  createdAt: string
-}
+    id: string;
+    handle: string;
+    name: string;
+    image: string | null;
+  };
+  createdAt: string;
+};
 
 type Mode = "explore" | "review";
 
 export default function Page() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-  const currentHandle = "@demo";
-  const router = useRouter()
-  const { data: session, isPending } = authClient.useSession()
-  
+  const router = useRouter();
+
+  const { data: session, isPending } = authClient.useSession();
+
+  const currentHandle = session?.user?.handle ?? null;
+
   useEffect(() => {
     if (!isPending && !session) {
-      router.push('/')
+      router.push("/");
     }
-  }, [session, isPending, router])
+  }, [session, isPending, router]);
 
   const [mode, setMode] = useState<Mode>("explore");
   const [prompt, setPrompt] = useState("");
@@ -81,16 +88,26 @@ export default function Page() {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState<number>(5);
   const [notes, setNotes] = useState<string>("");
-  const [selectedPlace, setSelectedPlace] = useState<{ placeId: string; name: string } | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<{
+    placeId: string;
+    name: string;
+  } | null>(null);
 
   const parsed = useMemo(() => {
     const lower = prompt.toLowerCase();
     const companions =
-      Array.from(prompt.matchAll(/@\w+/g)).map((m) => m[0]).filter((h) => h !== currentHandle) || [];
-    const city = / in ([a-zA-Z\s]+?)(?:$| under| for| with)/.exec(lower)?.[1]?.trim();
-    const budget =
-      /(\$|under\s*)?(\d{1,4})/.exec(lower)?.[2] ? Number(/(\$|under\s*)?(\d{1,4})/.exec(lower)![2]) : null;
-    const occasion = /(birthday|date|anniversary|team|friends|family)/.exec(lower)?.[1] ?? null;
+      Array.from(prompt.matchAll(/@\w+/g))
+        .map((m) => m[0])
+        .filter((h) => h !== currentHandle) || [];
+    const city = / in ([a-zA-Z\s]+?)(?:$| under| for| with)/
+      .exec(lower)?.[1]
+      ?.trim();
+    const budget = /(\$|under\s*)?(\d{1,4})/.exec(lower)?.[2]
+      ? Number(/(\$|under\s*)?(\d{1,4})/.exec(lower)![2])
+      : null;
+    const occasion =
+      /(birthday|date|anniversary|team|friends|family)/.exec(lower)?.[1] ??
+      null;
     return { companions, city, budgetMax: budget, occasion };
   }, [prompt, currentHandle]);
 
@@ -126,10 +143,10 @@ export default function Page() {
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
         </div>
-      )
+      );
     }
     if (!session) {
-      return null
+      return null;
     }
   }
 
@@ -141,14 +158,32 @@ export default function Page() {
             <Image src={logo} alt="Logo" width={34} height={34} />
             <span className="font-medium tracking-tight">mutual</span>
           </div>
+          <div className="pt-24">
+            {!isPending && session?.user && (
+              <div className="mx-auto max-w-3xl px-4 text-center">
+                <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-tight text-black">
+                  hi, <span>{currentHandle}</span>
+                </h1>
+                <p className="mt-3 text-base md:text-lg text-gray-500">
+                  tell us what you’re in the mood for.
+                </p>
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center justify-center pt-36 pb-10">
             <div className="w-full max-w-2xl flex flex-col items-center gap-4">
               <div className="inline-flex rounded-full border bg-white/70 backdrop-blur p-1 shadow-sm">
-                <TogglePill active={mode === "explore"} onClick={() => setMode("explore")}>
+                <TogglePill
+                  active={mode === "explore"}
+                  onClick={() => setMode("explore")}
+                >
                   Explore
                 </TogglePill>
-                <TogglePill active={mode === "review"} onClick={() => setMode("review")}>
+                <TogglePill
+                  active={mode === "review"}
+                  onClick={() => setMode("review")}
+                >
                   Review
                 </TogglePill>
               </div>
@@ -171,14 +206,20 @@ export default function Page() {
                   disabled={loading}
                   className="absolute right-1.5 top-1.5 h-9 rounded-lg px-4 bg-purple-600 hover:bg-purple-700 text-white transition-all"
                 >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go"}
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Go"
+                  )}
                 </Button>
               </div>
 
               {mode === "explore" ? (
                 <div className="text-xs text-muted-foreground">
-                  Detected → {parsed.companions.join(", ") || "no friends"}, {parsed.city || "no city"},{" "}
-                  {parsed.budgetMax ? `$${parsed.budgetMax}` : "no budget"}, {parsed.occasion || "no occasion"}
+                  Detected → {parsed.companions.join(", ") || "no friends"},{" "}
+                  {parsed.city || "no city"},{" "}
+                  {parsed.budgetMax ? `$${parsed.budgetMax}` : "no budget"},{" "}
+                  {parsed.occasion || "no occasion"}
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground">
@@ -190,7 +231,9 @@ export default function Page() {
 
           <div className="mx-auto w-full max-w-5xl px-4 pb-16 space-y-3">
             {suggestions.length === 0 && !loading ? (
-              <div className="text-sm text-muted-foreground text-center">No suggestions yet.</div>
+              <div className="text-sm text-muted-foreground text-center">
+                No suggestions yet.
+              </div>
             ) : null}
 
             {suggestions.map((s, idx) => {
@@ -215,9 +258,13 @@ export default function Page() {
                     ) : null}
                   </CardHeader>
                   <CardContent className="space-y-1">
-                    {place?.name ? <div className="text-sm">{place.name}</div> : null}
+                    {place?.name ? (
+                      <div className="text-sm">{place.name}</div>
+                    ) : null}
                     {place?.address ? (
-                      <div className="text-sm text-muted-foreground">{place.address}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {place.address}
+                      </div>
                     ) : null}
                     <div className="text-sm">{s.reason}</div>
                   </CardContent>
@@ -249,13 +296,23 @@ export default function Page() {
   );
 }
 
-function TogglePill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function TogglePill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}
       className={[
         "px-4 py-1.5 rounded-full text-sm transition-all",
-        active ? "bg-purple-600 text-white" : "text-muted-foreground hover:text-purple-700",
+        active
+          ? "bg-purple-600 text-white"
+          : "text-muted-foreground hover:text-purple-700",
       ].join(" ")}
     >
       {children}
@@ -275,7 +332,18 @@ function ReviewDialog(props: {
   notes: string;
   setNotes: (s: string) => void;
 }) {
-  const { open, onOpenChange, currentHandle, onSubmitted, selectedPlace, setSelectedPlace, rating, setRating, notes, setNotes } = props;
+  const {
+    open,
+    onOpenChange,
+    currentHandle,
+    onSubmitted,
+    selectedPlace,
+    setSelectedPlace,
+    rating,
+    setRating,
+    notes,
+    setNotes,
+  } = props;
   const placesLib = useMapsLibrary("places");
   const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState<any[]>([]);
@@ -287,32 +355,51 @@ function ReviewDialog(props: {
       return;
     }
     const svc = new (placesLib as any).AutocompleteService();
-    svc.getPlacePredictions({ input: query }, (res: any[]) => setPredictions(res || []));
+    svc.getPlacePredictions({ input: query }, (res: any[]) =>
+      setPredictions(res || [])
+    );
   }, [placesLib, query]);
 
   async function pickPrediction(p: any) {
     if (!placesLib) return;
-    const svc = new (placesLib as any).PlacesService(document.createElement("div"));
+    const svc = new (placesLib as any).PlacesService(
+      document.createElement("div")
+    );
     setLoading(true);
-    svc.getDetails({ placeId: p.place_id, fields: ["place_id", "name"] }, (detail: any) => {
-      setLoading(false);
-      if (detail?.place_id) {
-        setSelectedPlace({ placeId: detail.place_id, name: detail.name || "Unknown" });
-        setPredictions([]);
-        setQuery(detail.name || query);
+    svc.getDetails(
+      { placeId: p.place_id, fields: ["place_id", "name"] },
+      (detail: any) => {
+        setLoading(false);
+        if (detail?.place_id) {
+          setSelectedPlace({
+            placeId: detail.place_id,
+            name: detail.name || "Unknown",
+          });
+          setPredictions([]);
+          setQuery(detail.name || query);
+        }
       }
-    });
+    );
   }
 
   async function submitReview() {
     if (!selectedPlace) return;
     setLoading(true);
     try {
-      const tagsArray = notes.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+      const tagsArray = notes
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
       await fetch("/api/reviews", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ handle: currentHandle, placeId: selectedPlace.placeId, name: selectedPlace.name, rating, text: tagsArray }),
+        body: JSON.stringify({
+          handle: currentHandle,
+          placeId: selectedPlace.placeId,
+          name: selectedPlace.name,
+          rating,
+          text: tagsArray,
+        }),
       });
       onOpenChange(false);
       setQuery("");
@@ -328,7 +415,11 @@ function ReviewDialog(props: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{selectedPlace ? `Review ${selectedPlace.name}` : "Pick a place to review"}</DialogTitle>
+          <DialogTitle>
+            {selectedPlace
+              ? `Review ${selectedPlace.name}`
+              : "Pick a place to review"}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="grid gap-2">
@@ -344,7 +435,11 @@ function ReviewDialog(props: {
             {predictions.length > 0 && !selectedPlace && (
               <div className="border rounded-md max-h-48 overflow-auto">
                 {predictions.map((p) => (
-                  <button key={p.place_id} onClick={() => pickPrediction(p)} className="w-full text-left px-3 py-2 hover:bg-purple-50 transition-colors">
+                  <button
+                    key={p.place_id}
+                    onClick={() => pickPrediction(p)}
+                    className="w-full text-left px-3 py-2 hover:bg-purple-50 transition-colors"
+                  >
                     {p.description}
                   </button>
                 ))}
@@ -352,7 +447,10 @@ function ReviewDialog(props: {
             )}
             {selectedPlace && (
               <div className="text-sm text-muted-foreground">
-                Selected: <span className="font-medium text-foreground">{selectedPlace.name}</span>
+                Selected:{" "}
+                <span className="font-medium text-foreground">
+                  {selectedPlace.name}
+                </span>
               </div>
             )}
           </div>
@@ -360,15 +458,33 @@ function ReviewDialog(props: {
             <>
               <div className="grid gap-2">
                 <Label>Rating (1–5)</Label>
-                <Input type="number" min={1} max={5} value={rating} onChange={(e) => setRating(Number(e.target.value))} />
+                <Input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={rating}
+                  onChange={(e) => setRating(Number(e.target.value))}
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Review notes / tags</Label>
-                <Textarea placeholder="e.g. cozy, great milk texture, romantic vibe" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                <Textarea
+                  placeholder="e.g. cozy, great milk texture, romantic vibe"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
               </div>
               <div className="pt-2">
-                <Button disabled={loading} onClick={submitReview} className="bg-purple-600 hover:bg-purple-700 text-white transition-all">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit review"}
+                <Button
+                  disabled={loading}
+                  onClick={submitReview}
+                  className="bg-purple-600 hover:bg-purple-700 text-white transition-all"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Submit review"
+                  )}
                 </Button>
               </div>
             </>
@@ -382,16 +498,16 @@ function ReviewDialog(props: {
 function HamburgerMenu() {
   const [open, setOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const handleLogout = async () => {
     try {
-      await authClient.signOut()
-      router.push('/')
+      await authClient.signOut();
+      router.push("/");
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error("Logout error:", error);
     }
-  }
+  };
 
   return (
     <>
@@ -417,18 +533,23 @@ function HamburgerMenu() {
         <div>
           <div className="flex justify-between items-center p-4 border-b">
             <span className="font-medium">Menu</span>
-            <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-purple-600">
+            <button
+              onClick={() => setOpen(false)}
+              className="text-muted-foreground hover:text-purple-600"
+            >
               <Menu className="w-5 h-5" />
             </button>
           </div>
           <div className="p-4 space-y-3">
-            <Button variant="outline" className="w-full">Previous Reviews</Button>
-            <Button 
-              variant="outline" 
+            <Button variant="outline" className="w-full">
+              Previous Reviews
+            </Button>
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => {
-                setFriendsOpen(true)
-                setOpen(false)
+                setFriendsOpen(true);
+                setOpen(false);
               }}
             >
               Friends
@@ -437,7 +558,10 @@ function HamburgerMenu() {
         </div>
 
         <div className="p-4">
-          <Button onClick={handleLogout} className="w-full bg-purple-600 text-white hover:bg-purple-700">
+          <Button
+            onClick={handleLogout}
+            className="w-full bg-purple-600 text-white hover:bg-purple-700"
+          >
             Log Out
           </Button>
         </div>
