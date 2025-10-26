@@ -61,15 +61,29 @@ type Mode = "explore" | "review";
 
 export default function Page() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-  const currentHandle = "@demo";
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
+  const [currentUser, setCurrentUser] = useState<{ handle: string } | null>(null)
   
   useEffect(() => {
     if (!isPending && !session) {
       router.push('/')
     }
   }, [session, isPending, router])
+  
+  useEffect(() => {
+    async function fetchCurrentUser() {
+      if (session?.user?.id) {
+        const res = await fetch('/api/user/me')
+        const data = await res.json()
+        setCurrentUser(data)
+      }
+    }
+    fetchCurrentUser()
+  }, [session])
+
+  const currentHandle = currentUser?.handle || null
+  console.log(currentHandle)
 
   const [mode, setMode] = useState<Mode>("explore");
   const [prompt, setPrompt] = useState("");
