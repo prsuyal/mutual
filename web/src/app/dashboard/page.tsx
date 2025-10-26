@@ -41,6 +41,85 @@ type Coords = { lat: number; lng: number };
 
 const first = (name?: string | null) => name?.trim().split(/\s+/)[0] || null;
 
+// 👇 Rotating example prompts
+const EXPLORE_HINTS = [
+  "w @pranshu in san fran for $20 for a birthday",
+  "food nearby",
+  "in seattle for 4 more hours — anything interesting?",
+  "date night ideas under $50",
+  "coffee near me that’s open late",
+];
+
+const REVIEW_HINTS = [
+  "scrumptious chicken sandwiches",
+  "lot of traffic heading there",
+  "friendly staff, overall amazing experience",
+  "cozy vibes, great study spot",
+  "too salty, service was slow",
+];
+function useTypewriter(
+  phrases: string[],
+  opts: {
+    typeMs?: number;
+    deleteMs?: number;
+    holdMs?: number;
+    startDelayMs?: number;
+    restartKey?: any;
+    paused?: boolean; // 👈 new
+  } = {}
+) {
+  const {
+    typeMs = 60,
+    deleteMs = 30,
+    holdMs = 1000,
+    startDelayMs = 250,
+    restartKey,
+    paused = false,
+  } = opts;
+
+  const [out, setOut] = useState('');
+  const [i, setI] = useState(0);
+  const [k, setK] = useState(0);
+  const [del, setDel] = useState(false);
+
+  // reset when phrases/mode change
+  useEffect(() => {
+    setOut('');
+    setI(0);
+    setK(0);
+    setDel(false);
+  }, [phrases, restartKey]);
+
+  useEffect(() => {
+    if (paused || !phrases.length) return; // 👈 stop all timers immediately
+    let t: number;
+    const current = phrases[i % phrases.length];
+
+    if (!del && k < current.length) {
+      t = window.setTimeout(() => {
+        setOut(current.slice(0, k + 1));
+        setK(k + 1);
+      }, typeMs);
+    } else if (!del && k === current.length) {
+      t = window.setTimeout(() => setDel(true), holdMs);
+    } else if (del && k > 0) {
+      t = window.setTimeout(() => {
+        setOut(current.slice(0, k - 1));
+        setK(k - 1);
+      }, deleteMs);
+    } else {
+      t = window.setTimeout(() => {
+        setI((i + 1) % phrases.length);
+        setDel(false);
+      }, startDelayMs);
+    }
+
+    return () => window.clearTimeout(t);
+  }, [phrases, i, k, del, typeMs, deleteMs, holdMs, startDelayMs, paused]);
+
+  return out;
+}
+
 export default function Page() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
   const router = useRouter();
@@ -67,21 +146,16 @@ export default function Page() {
       const data = await res.json();
       setCurrentUser(data ?? null);
     }
-<<<<<<< HEAD
     fetchCurrentUser();
   }, [session?.user?.id]);
-=======
-    fetchCurrentUser()
-  }, [session])
-
-  const currentHandle = currentUser?.handle
-
->>>>>>> 4ecb092ac4f3971cc1301db1467036e32e005619
 
   const [mode, setMode] = useState<Mode>("explore");
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [focused, setFocused] = useState(false);
+  const demoActive = !focused && prompt.length === 0;
+
 
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
@@ -93,6 +167,11 @@ export default function Page() {
   const [feedItems, setFeedItems] = useState<Suggestion[]>([]);
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedInitialized, setFeedInitialized] = useState(false);
+
+  const typedPlaceholder = useTypewriter(
+  demoActive ? (mode === 'explore' ? EXPLORE_HINTS : REVIEW_HINTS) : [],
+  { restartKey: mode, paused: !demoActive }
+);
 
   useEffect(() => {
     const perm = (navigator as any).permissions?.query;
@@ -184,8 +263,6 @@ export default function Page() {
     return { companions, city, budgetMax: budget, occasion };
   }, [prompt, currentHandle]);
 
-  useEffect(() => inputRef.current?.focus(), []);
-
   async function onSubmit() {
     if (mode === "explore") {
       setLoading(true);
@@ -256,30 +333,47 @@ export default function Page() {
               </div>
 
               <div className="relative w-full">
-                <Input
-                  ref={inputRef}
-                  placeholder={
-                    mode === "explore"
-                      ? 'Ask anything… e.g. "with @pranshu in san francisco under $30 for a birthday"'
-                      : 'Add quick tags… e.g. "cozy, great milk texture, romantic vibe"'
-                  }
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && onSubmit()}
-                  className="h-12 rounded-xl pl-4 pr-28"
-                />
-                <Button
-                  onClick={onSubmit}
-                  disabled={loading}
-                  className="absolute right-1.5 top-1.5 h-9 rounded-lg px-4 bg-purple-600 hover:bg-purple-700 text-white transition-all"
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Go"
-                  )}
-                </Button>
-              </div>
+  <Input
+    ref={inputRef}
+    placeholder=""
+    value={prompt}
+    onChange={(e) => setPrompt(e.target.value)}
+    onKeyDown={(e) => e.key === "Enter" && onSubmit()}
+    onFocus={() => setFocused(true)}
+    onBlur={() => setFocused(false)}
+    onPointerDown={() => setFocused(true)}
+    className={[
+      "h-12 rounded-xl pl-4 pr-28",
+      demoActive ? "[caret-color:transparent]" : "",
+    ].join(" ")}
+  />
+
+  {demoActive && (
+  <div
+    aria-hidden
+    className="pointer-events-none absolute inset-0 flex items-center"
+  >
+    <div className="pl-4 pr-28 w-full">
+      <span className="text-muted-foreground whitespace-pre">
+        {typedPlaceholder}
+      </span>
+      <span className="ml-0.5 inline-block align-middle h-[1.2em] w-px bg-gray-400 animate-pulse" />
+    </div>
+  </div>
+)}
+
+
+  <Button
+    onClick={onSubmit}
+    disabled={loading}
+    className="absolute right-1.5 top-1.5 h-9 rounded-lg px-4 bg-purple-600 hover:bg-purple-700 text-white transition-all"
+  >
+    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go"}
+  </Button>
+</div>
+
+
+
 
               <div className="text-xs text-muted-foreground flex items-center gap-2">
                 <span>
@@ -366,11 +460,10 @@ export default function Page() {
             setNotes={setNotes}
           />
         </div>
-
-        <HamburgerMenu />
-      </div>
-    </APIProvider>
-  );
+      <HamburgerMenu />
+    </div>
+  </APIProvider>
+);  
 }
 
 function TogglePill({
@@ -709,7 +802,7 @@ function ReviewDialog(props: {
                 />
               </div>
               <div className="grid gap-2">
-                <Label>Review notes / tags</Label>
+                <Label>Review notes</Label>
                 <Textarea
                   placeholder="e.g. cozy, great milk texture, romantic vibe"
                   value={notes}
@@ -737,37 +830,11 @@ function ReviewDialog(props: {
   );
 }
 
-<<<<<<< HEAD
 function HamburgerMenu() {
   const [open, setOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
   const router = useRouter();
   const { data: session } = authClient.useSession();
-=======
-export function HamburgerMenu() {
-  const [open, setOpen] = useState(false)
-  const [friendsOpen, setFriendsOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [handle, setHandle] =useState<any>(null)
-  const router = useRouter()
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const session = await authClient.getSession()
-        if (session?.data?.user){
-          setUser(session.data.user)
-          const res = await fetch('/api/user/me')
-          const data = await res.json()
-          setHandle(data.handle)
-        } 
-      } catch (err) {
-        console.error("Failed to fetch session:", err)
-      }
-    }
-    fetchSession()
-  }, [])
->>>>>>> 4ecb092ac4f3971cc1301db1467036e32e005619
 
   const handleLogout = async () => {
     try {
@@ -814,7 +881,6 @@ export function HamburgerMenu() {
 
           {user && (
             <div className="flex items-center gap-3 p-4 border-b">
-<<<<<<< HEAD
               <img
                 src={(user as any).image || "/default-avatar.png"}
                 alt="User avatar"
@@ -827,20 +893,6 @@ export function HamburgerMenu() {
                 <span className="text-xs text-gray-500 truncate">
                   {user.id}
                 </span>
-=======
-              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                          {user?.image ? (
-                            <img src={user.image} alt="" className="h-10 w-10 rounded-full object-cover" />
-                          ) : (
-                            <span className="text-purple-600 font-medium">
-                              {user?.name?.[0]?.toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-sm">{user.name || "Anonymous"}</span>
-                <span className="text-xs text-gray-500 truncate">@{handle}</span>
->>>>>>> 4ecb092ac4f3971cc1301db1467036e32e005619
               </div>
             </div>
           )}
