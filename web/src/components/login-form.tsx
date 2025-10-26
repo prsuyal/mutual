@@ -131,7 +131,7 @@ export function LoginForm({
                   className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all"
                 >
                   Forgot your password?
-                </a>
+                </button>
               </div>
               <Input id="password" type="password" required />
             </Field>
@@ -145,6 +145,7 @@ export function LoginForm({
               </FieldDescription>
             </Field>
           </FieldGroup>
+          
         </CardContent>
       </Card>
     </div>
