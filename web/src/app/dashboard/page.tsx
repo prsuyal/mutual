@@ -87,7 +87,8 @@ export default function Page() {
     fetchCurrentUser()
   }, [session])
 
-  console.log(currentHandle)
+  const currentHandle = currentUser?.handle
+
 
   const [mode, setMode] = useState<Mode>("explore");
   const [prompt, setPrompt] = useState("");
@@ -510,14 +511,19 @@ export function HamburgerMenu() {
   const [open, setOpen] = useState(false)
   const [friendsOpen, setFriendsOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [handle, setHandle] =useState<any>(null)
   const router = useRouter()
 
-  
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const session = await authClient.useSession()
-        if (session?.data?.user) setUser(session.data.user)
+        const session = await authClient.getSession()
+        if (session?.data?.user){
+          setUser(session.data.user)
+          const res = await fetch('/api/user/me')
+          const data = await res.json()
+          setHandle(data.handle)
+        } 
       } catch (err) {
         console.error("Failed to fetch session:", err)
       }
@@ -568,14 +574,18 @@ export function HamburgerMenu() {
 
           {user && (
             <div className="flex items-center gap-3 p-4 border-b">
-              <img
-                src={user.image || "/default-avatar.png"}
-                alt="User avatar"
-                className="w-10 h-10 rounded-full object-cover border"
-              />
+              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                          {user?.image ? (
+                            <img src={user.image} alt="" className="h-10 w-10 rounded-full object-cover" />
+                          ) : (
+                            <span className="text-purple-600 font-medium">
+                              {user?.name?.[0]?.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
               <div className="flex flex-col">
                 <span className="font-semibold text-sm">{user.name || "Anonymous"}</span>
-                <span className="text-xs text-gray-500 truncate">{user.id}</span>
+                <span className="text-xs text-gray-500 truncate">@{handle}</span>
               </div>
             </div>
           )}
