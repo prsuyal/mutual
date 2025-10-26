@@ -10,12 +10,10 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Menu } from "lucide-react";
 import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
-
-
-
+import { Loader2, Menu } from "lucide-react"
+import { FriendsDialog } from "@/components/friends-dialog"
 
 type Place = {
   placeId: string;
@@ -30,6 +28,34 @@ type Suggestion = {
   query?: string;
   places: Place[];
 };
+
+type Friend = {
+  friendshipId: string
+  user: {
+    id: string
+    handle: string
+    name: string
+    image: string | null
+  }
+  since: string
+}
+
+type FriendRequest = {
+  id: string
+  sender?: {
+    id: string
+    handle: string
+    name: string
+    image: string | null
+  }
+  receiver?: {
+    id: string
+    handle: string
+    name: string
+    image: string | null
+  }
+  createdAt: string
+}
 
 type Mode = "explore" | "review";
 
@@ -355,11 +381,13 @@ function ReviewDialog(props: {
 
 function HamburgerMenu() {
   const [open, setOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
   const router = useRouter()
+  
   const handleLogout = async () => {
     try {
       await authClient.signOut()
-      router.push('/') // Redirect to home page
+      router.push('/')
     } catch (error) {
       console.error('Logout error:', error)
     }
@@ -367,7 +395,6 @@ function HamburgerMenu() {
 
   return (
     <>
-      {/* Hamburger button */}
       <button
         className="p-3 m-2 bg-purple-600 text-white rounded-md shadow hover:bg-purple-700 transition-all fixed top-4 right-4 z-40"
         onClick={() => setOpen(true)}
@@ -375,7 +402,6 @@ function HamburgerMenu() {
         <Menu className="w-5 h-5" />
       </button>
 
-      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 bg-black/40 z-30"
@@ -383,7 +409,6 @@ function HamburgerMenu() {
         />
       )}
 
-      {/* Side menu */}
       <div
         className={`h-full w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out fixed right-0 top-0 z-40 flex flex-col justify-between ${
           open ? "translate-x-0" : "translate-x-full"
@@ -398,14 +423,27 @@ function HamburgerMenu() {
           </div>
           <div className="p-4 space-y-3">
             <Button variant="outline" className="w-full">Previous Reviews</Button>
-            <Button variant="outline" className="w-full">Friends</Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => {
+                setFriendsOpen(true)
+                setOpen(false)
+              }}
+            >
+              Friends
+            </Button>
           </div>
         </div>
 
         <div className="p-4">
-        <Button onClick={handleLogout} className="w-full bg-purple-600 text-white hover:bg-purple-700">Log Out</Button>
+          <Button onClick={handleLogout} className="w-full bg-purple-600 text-white hover:bg-purple-700">
+            Log Out
+          </Button>
         </div>
       </div>
+
+      <FriendsDialog open={friendsOpen} onOpenChange={setFriendsOpen} />
     </>
   );
 }
