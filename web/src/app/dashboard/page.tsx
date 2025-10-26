@@ -66,17 +66,42 @@ type Mode = "explore" | "review";
 
 export default function Page() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
+<<<<<<< HEAD
   const router = useRouter();
 
   const { data: session, isPending } = authClient.useSession();
 
   const currentHandle = session?.user?.handle ?? null;
 
+=======
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
+  const [currentUser, setCurrentUser] = useState<{ handle: string } | null>(null)
+  
+>>>>>>> f07548738d6c99fa0b1eb6a57839e3f30d3d3c00
   useEffect(() => {
     if (!isPending && !session) {
       router.push("/");
     }
+<<<<<<< HEAD
   }, [session, isPending, router]);
+=======
+  }, [session, isPending, router])
+  
+  useEffect(() => {
+    async function fetchCurrentUser() {
+      if (session?.user?.id) {
+        const res = await fetch('/api/user/me')
+        const data = await res.json()
+        setCurrentUser(data)
+      }
+    }
+    fetchCurrentUser()
+  }, [session])
+
+  const currentHandle = currentUser?.handle
+  console.log(currentHandle)
+>>>>>>> f07548738d6c99fa0b1eb6a57839e3f30d3d3c00
 
   const [mode, setMode] = useState<Mode>("explore");
   const [prompt, setPrompt] = useState("");
@@ -276,7 +301,7 @@ export default function Page() {
           <ReviewDialog
             open={reviewOpen}
             onOpenChange={setReviewOpen}
-            currentHandle={currentHandle}
+            currentHandle={currentHandle!}
             onSubmitted={() => {
               setPrompt("");
               setSelectedPlace(null);
