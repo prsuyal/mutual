@@ -100,7 +100,7 @@ export async function POST(req: Request) {
           model: "claude-sonnet-4-5",
           max_tokens: 600,
           system:
-            "you are a planner. given tastes/tags, city, budget, occasion, return 3–5 concrete activity ideas. You MUST use the return_suggestions tool and provide all outputs only via that tool. Do not write normal text.",
+            "you are a planner. given tastes/tags, city, budget, occasion, return 3 to 5 concrete activity ideas. You MUST use the return_suggestions tool and provide all outputs only via that tool. Do not write normal text.",
           tools: [
             {
               name: "return_suggestions",
@@ -144,7 +144,7 @@ export async function POST(req: Request) {
                     liked.length
                       ? `prev liked venues: ${liked.map((v) => v.name).join(", ")}`
                       : `no prev likes recorded.`,
-                    `return 3–5 suggestions via the return_suggestions tool ONLY.`,
+                    `return 3 to 5 suggestions via the return_suggestions tool ONLY.`,
                   ].join("\n"),
                 },
               ],
