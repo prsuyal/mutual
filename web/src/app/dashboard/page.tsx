@@ -345,7 +345,7 @@ export default function Page() {
     onPointerDown={() => setFocused(true)}
     className={[
       "h-12 rounded-xl pl-4 pr-28",
-      demoActive ? "[caret-color:transparent]" : "",
+      demoActive ? "[caret-transparent]" : "",
     ].join(" ")}
   />
 
@@ -860,8 +860,6 @@ export function HamburgerMenu() {
       console.error("Logout error:", error);
     }
   };
-
-  const user = session?.user;
 
   return (
     <>
