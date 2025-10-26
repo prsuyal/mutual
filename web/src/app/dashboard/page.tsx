@@ -82,7 +82,6 @@ export default function Page() {
     fetchCurrentUser()
   }, [session])
 
-  const currentHandle = currentUser?.handle
   console.log(currentHandle)
 
   const [mode, setMode] = useState<Mode>("explore");
@@ -393,17 +392,31 @@ function ReviewDialog(props: {
   );
 }
 
-function HamburgerMenu() {
-  const [open, setOpen] = useState(false);
-  const [friendsOpen, setFriendsOpen] = useState(false);
+export function HamburgerMenu() {
+  const [open, setOpen] = useState(false)
+  const [friendsOpen, setFriendsOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const router = useRouter()
+
   
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await authClient.useSession()
+        if (session?.data?.user) setUser(session.data.user)
+      } catch (err) {
+        console.error("Failed to fetch session:", err)
+      }
+    }
+    fetchSession()
+  }, [])
+
   const handleLogout = async () => {
     try {
       await authClient.signOut()
-      router.push('/')
+      router.push("/")
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error("Logout error:", error)
     }
   }
 
@@ -435,10 +448,27 @@ function HamburgerMenu() {
               <Menu className="w-5 h-5" />
             </button>
           </div>
+
+          {user && (
+            <div className="flex items-center gap-3 p-4 border-b">
+              <img
+                src={user.image || "/default-avatar.png"}
+                alt="User avatar"
+                className="w-10 h-10 rounded-full object-cover border"
+              />
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm">{user.name || "Anonymous"}</span>
+                <span className="text-xs text-gray-500 truncate">{user.id}</span>
+              </div>
+            </div>
+          )}
+
           <div className="p-4 space-y-3">
-            <Button variant="outline" className="w-full">Previous Reviews</Button>
-            <Button 
-              variant="outline" 
+            <Button variant="outline" className="w-full">
+              Previous Reviews
+            </Button>
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => {
                 setFriendsOpen(true)
@@ -451,7 +481,10 @@ function HamburgerMenu() {
         </div>
 
         <div className="p-4">
-          <Button onClick={handleLogout} className="w-full bg-purple-600 text-white hover:bg-purple-700">
+          <Button
+            onClick={handleLogout}
+            className="w-full bg-purple-600 text-white hover:bg-purple-700"
+          >
             Log Out
           </Button>
         </div>
@@ -459,5 +492,5 @@ function HamburgerMenu() {
 
       <FriendsDialog open={friendsOpen} onOpenChange={setFriendsOpen} />
     </>
-  );
+  )
 }
