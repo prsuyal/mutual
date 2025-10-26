@@ -170,24 +170,28 @@ const handleGoogleSignup = async () => {
             )}
             <FieldGroup>
               <Field>
-                <Button type="submit" disabled={loading} className="w-full">
+                <Button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-all"
+                >
                   {loading ? 'Creating...' : 'Create Account'}
                 </Button>
                 <Button 
                   variant="outline" 
                   type="button" 
                   onClick={handleGoogleSignup}
-                  className="w-full"
+                  className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 hover:border-purple-700 hover:text-purple-700 transition-all"
                 >
                   Sign up with Google
                 </Button>
-                <FieldDescription className="px-6 text-center">
-                  Already have an account? <a href="/signin" className="underline">Sign in</a>
+                <FieldDescription className="text-center">
+                  Already have an account? <a href="/auth/login" className="transition-colors underline">Login</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
           </FieldGroup>
-        </FieldGroup>
+        </form>
       </CardContent>
     </Card>
   )
