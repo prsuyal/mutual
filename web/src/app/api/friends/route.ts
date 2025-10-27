@@ -12,7 +12,6 @@ export async function GET() {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get friends - now simpler, just query one side
     const friendships = await prisma.friendship.findMany({
       where: {
         userId: session.user.id,
@@ -25,7 +24,6 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     })
 
-    // Get friend details by querying the friendId
     const friends = await Promise.all(
       friendships.map(async (f: any) => {
         const friend = await prisma.user.findUnique({

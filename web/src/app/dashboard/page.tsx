@@ -42,12 +42,11 @@ type Coords = { lat: number; lng: number };
 
 const first = (name?: string | null) => name?.trim().split(/\s+/)[0] || null;
 
-// 👇 Rotating example prompts
 const EXPLORE_HINTS = [
-  "w @pranshu in san fran for $20 for a birthday",
-  "food nearby",
-  "in seattle for 4 more hours — anything interesting?",
-  "date night ideas under $50",
+  "with @ayan in san fran this morning - breakfast under $15?",
+  "food nearby? i wanna make some friends",
+  "in seattle for 4 more hours with @leo — anything interesting?",
+  "date night ideas under $50?",
   "coffee near me that’s open late",
 ];
 
@@ -83,7 +82,6 @@ function useTypewriter(
   const [k, setK] = useState(0);
   const [del, setDel] = useState(false);
 
-  // reset when phrases/mode change
   useEffect(() => {
     setOut('');
     setI(0);
@@ -92,7 +90,7 @@ function useTypewriter(
   }, [phrases, restartKey]);
 
   useEffect(() => {
-    if (paused || !phrases.length) return; // 👈 stop all timers immediately
+    if (paused || !phrases.length) return;
     let t: number;
     const current = phrases[i % phrases.length];
 

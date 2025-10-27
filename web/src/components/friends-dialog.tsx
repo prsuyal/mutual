@@ -166,7 +166,6 @@ export function FriendsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </TabsList>
 
           <TabsContent value="friends" className="space-y-4">
-            {/* Search friends */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -177,7 +176,6 @@ export function FriendsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               />
             </div>
 
-            {/* Friends list */}
             <div className="max-h-96 overflow-y-auto space-y-2">
               {loading ? (
                 <div className="flex justify-center py-8">
@@ -222,7 +220,6 @@ export function FriendsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </TabsContent>
 
           <TabsContent value="requests" className="space-y-4">
-            {/* Send new friend request */}
             <div className="space-y-2">
               <div className="text-sm font-medium">Add a friend</div>
               <div className="flex gap-2">
@@ -252,7 +249,6 @@ export function FriendsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             </div>
 
             <div className="border-t pt-4 space-y-4">
-              {/* Incoming requests */}
               {pendingRequests.length > 0 && (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Incoming Requests</div>
@@ -297,7 +293,6 @@ export function FriendsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                 </div>
               )}
 
-              {/* Outgoing requests */}
               {sentRequests.length > 0 && (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Sent Requests</div>

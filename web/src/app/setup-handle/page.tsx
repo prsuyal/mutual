@@ -27,11 +27,9 @@ export default function SetupHandlePage() {
   const { data: session } = authClient.useSession()
 
   useEffect(() => {
-    // Check if user is logged in
     if (checkingSession && session) {
       setCheckingSession(false)
       
-      // If user already has a handle, redirect to dashboard
       if (session.user) {
         fetch('/api/user/check-handle')
           .then(res => res.json())
@@ -42,7 +40,6 @@ export default function SetupHandlePage() {
           })
       }
     } else if (!session && !checkingSession) {
-      // Not logged in, redirect to signup
       router.push('/signup')
     }
   }, [session, checkingSession, router])
@@ -73,7 +70,6 @@ export default function SetupHandlePage() {
         return
       }
 
-      // Success! Redirect to dashboard
       router.push('/dashboard')
     } catch (err: any) {
       console.error('Handle setup error:', err)

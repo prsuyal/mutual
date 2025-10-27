@@ -14,7 +14,6 @@ export async function DELETE(req: Request) {
 
     const { friendId } = await req.json()
 
-    // Delete both sides of the friendship
     await prisma.friendship.deleteMany({
       where: {
         OR: [

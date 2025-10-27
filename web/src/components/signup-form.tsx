@@ -47,7 +47,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     }
 
     try {
-      // Create the user account
       const result = await authClient.signUp.email({
         email,
         password,
@@ -60,7 +59,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         return
       }
 
-      // Update with the handle
       const handleResponse = await fetch('/api/user/update-handle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

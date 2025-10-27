@@ -26,7 +26,6 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Not authorized' }, { status: 403 })
     }
 
-    // Create mutual friendships and delete request
     await prisma.$transaction([
       prisma.friendship.create({
         data: {

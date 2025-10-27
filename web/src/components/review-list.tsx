@@ -42,7 +42,6 @@ export function ReviewsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
       const data = await res.json()
       if (res.ok) {
         setReviews(data.reviews || [])
-        // Fetch addresses for reviews with lat/lng
         data.reviews?.forEach((review: Review) => {
           if (review.activity.lat && review.activity.lng) {
             fetchAddress(review.activity.id, review.activity.lat, review.activity.lng)
@@ -144,7 +143,6 @@ export function ReviewsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               filteredReviews.map((review) => (
                 <Card key={review.id}>
                   <CardContent className="p-4 space-y-3">
-                    {/* Header with place name and actions */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="font-medium">{review.activity.name}</div>
@@ -183,7 +181,6 @@ export function ReviewsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                       </div>
                     </div>
 
-                    {/* Rating */}
                     <div className="flex items-center gap-2">
                       {renderStars(review.rating)}
                       <span className="text-sm text-muted-foreground">
@@ -191,14 +188,12 @@ export function ReviewsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                       </span>
                     </div>
 
-                    {/* Review text */}
                     {review.text && (
                       <div className="text-sm text-muted-foreground">
                         {review.text}
                       </div>
                     )}
 
-                    {/* Date */}
                     <div className="text-xs text-muted-foreground">
                       {new Date(review.createdAt).toLocaleDateString('en-US', {
                         month: 'long',
